@@ -6,8 +6,12 @@ import random
 import asyncio
 import aiohttp
 import json
+import os
+from dotenv import load_dotenv
 
-client = commands.CommandsClient("=")
+load_dotenv()
+PREFIX = os.getenv("REVOLTBOTPREFIX")
+client = commands.CommandsClient(PREFIX)
 
 def convert(time):
   pos = ["s","m","h","d"]
@@ -124,4 +128,5 @@ async def numberguessing(ctx):
 
 
 
-client.run("BOTTOKENHERE")
+TOKEN = os.getenv("REVOLTBOTTOKEN")
+client.run(TOKEN)

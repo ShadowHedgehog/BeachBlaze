@@ -1,4 +1,5 @@
 discord.py
-guilded.py
+discord
 voltage @ git+https://github.com/EnokiUN/voltage
+python-dotenv
 requests

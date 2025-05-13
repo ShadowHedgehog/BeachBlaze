@@ -6,33 +6,33 @@ import random
 import asyncio
 import aiohttp
 import sys
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+PREFIX = os.getenv("DISCORDBOTPREFIX")
 intents = discord.Intents.default()
 intents.message_content = True
-client = commands.Bot(command_prefix=commands.when_mentioned_or('='), intents=intents)
+client = commands.Bot(command_prefix=PREFIX, intents=intents)
 client.remove_command("help")
 
 def convert(time):
   pos = ["s","m","h","d"]
-
   time_dict = {"s" : 1, "m" : 60, "h" : 3600, "d": 3600*24}
-
   unit = time[-1]
-
   if unit not in pos:
     return -1
   try:
     val = int(time[:-1])
   except:
     return -2
-
   return val * time_dict[unit]
 
 @client.command()
 async def help(ctx):
     embed = discord.Embed(title="HELP MENU", description="Here is my List of Commands", color=(40191))
-    embed.add_field(name="CORE COMMANDS", value="=help - This message\n=ping - Checks my latency\n=giveaway - Setup a giveaway in your channel\n=poll - Create a 2 answer poll", inline=False)
-    embed.add_field(name="OTHER COMMANDS", value="=say - Make me say stuff\n=esay - Make me say stuff in an embed", inline=False)
+    embed.add_field(name="CORE COMMANDS", value=f"{PREFIX}help - This message\n{PREFIX}ping - Checks my latency\n{PREFIX}giveaway - Setup a giveaway in your channel\n{PREFIX}poll - Create a 2 answer poll", inline=False)
+    embed.add_field(name="OTHER COMMANDS", value=f"{PREFIX}say - Make me say stuff\n{PREFIX}esay - Make me say stuff in an embed\n{PREFIX}rps - Play Rock Paper Scissors with the bot\n{PREFIX}numberguessing - Play the Number guessing game with the bot/n{PREFIX}serverinfo - Get information about your server", inline=False)
     await ctx.send(embed=embed)
 
 @client.command()
@@ -71,7 +71,7 @@ async def giveaway_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send('You are missing permissions. You need the ``MANAGE_GUILD`` Permission to use this command')
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("This command requires some arguments: =giveaway <time> <winners> <prize>")
+        await ctx.send(f"This command requires some arguments: {PREFIX}giveaway <time> <winners> <prize>")
     else:
         raise error
 
@@ -98,9 +98,22 @@ async def poll_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send('You are missing permissions. You need the ``MANAGE_GUILD`` Permission to use this command')
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("This command requires some arguments: =poll <'question'> <'answer1'> <'answer2'>")
+        await ctx.send(f"This command requires some arguments: {PREFIX}poll <'question'> <'answer1'> <'answer2'>")
     else:
         raise error
+
+@client.command()
+async def serverinfo(ctx):
+    format = "%a, %b %d %Y | %H:%M:%S %ZGMT"   
+    nonbots = [user for user in ctx.guild.members if user.bot == False]
+    embed = discord.Embed(title=f"Server Info for {ctx.guild.name}", description="Guild Name: {ctx.guild.name}\nMember Count: {ctx.guild.member_count}\nHumans Count: {len(nonbots)}\nGuild ID: {ctx.guild.id}\nServer Owner: {ctx.guild.owner}\nVerification Level: {ctx.guild.verification_level}\nServer Creation Date: {ctx.guild.created_at.strftime(format)}", color=(65400))
+    text_channels = len(ctx.guild.text_channels)
+    voice_channels = len(ctx.guild.voice_channels)
+    categories = len(ctx.guild.categories)
+    channels = text_channels + voice_channels
+    embed.add_field(name="Channel Count", value=f"Categories; **{categories}**\nText Channels; **{text_channels}**\nVoice Channels; **{voice_channels}**\nTotal Channels: **{channels}**", inline=False)
+    embed.set_thumbnail(url=ctx.guild.icon)
+    await ctx.send(embed=embed)
 
 @client.command()
 async def say(ctx, *, question: commands.clean_content):
@@ -127,6 +140,65 @@ async def esay_error(ctx, error):
     else:
         raise error
 
+@client.command()
+async def rps(ctx):
+    rpsGame = ['rock', 'paper', 'scissors']
+    await ctx.send(f"Time to play Rock Paper Scissors. Choose: rock, paper, scissors")
+
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel and msg.content.lower() in rpsGame
+
+    user_choice = (await client.wait_for('message', check=check)).content
+
+    comp_choice = random.choice(rpsGame)
+    if user_choice == 'rock':
+        if comp_choice == 'rock':
+            await ctx.send(f"Your Status: Tied\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+        elif comp_choice == 'paper':
+            await ctx.send(f"Your Status: Lost\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+        elif comp_choice == 'scissors':
+            await ctx.send(f"Your Status: Won\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+
+    elif user_choice == 'paper':
+        if comp_choice == 'rock':
+            await ctx.send(f"Your Status: Won\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+        elif comp_choice == 'paper':
+            await ctx.send(f"Your Status: Tied\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+        elif comp_choice == 'scissors':
+            await ctx.send(f"Your Status: Lost\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+
+    elif user_choice == 'scissors':
+        if comp_choice == 'rock':
+            await ctx.send(f"Your Status: Lost\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+        elif comp_choice == 'paper':
+            await ctx.send(f"Your Status: Won\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+        elif comp_choice == 'scissors':
+            await ctx.send(f"Your Status: Tied\nYour choice: {user_choice}\nMy choice: {comp_choice}")
+
+@client.command()
+async def numberguessing(ctx):
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.message.channel
+    number = random.randint(1, 100)
+    await ctx.send("Time to play the number guessing game. I am thinking of a number between 1 and 100. You get 10 chances.")
+
+    for i in range(0, 10):
+        guess = await client.wait_for('message', check=check)
+        if guess.content == str(number):
+            await ctx.send("You guess the right number which means you won. You can run =numberguessing if you want to play again")
+            return
+        elif guess.content < str(number):
+            await ctx.send('Higher!')
+        elif guess.content > str(number):
+            await ctx.send('Lower!')
+        else:
+            return     
+    else:
+        await ctx.send("You didnt guess the right number within 10 tries which means you lost. You can try again by using =numberguessing")
 
 
-client.run("BOTTOKENHERE")
+
+
+
+TOKEN = os.getenv("DISCORDBOTTOKEN")
+client.run(TOKEN)

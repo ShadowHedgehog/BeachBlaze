@@ -37,6 +37,12 @@ Step 4: Run the bot by using python main.py and enjoy.
 
 ## Changelog
 
+June 3rd, 2025
+
+- Giveaway and poll commands can now be used by people with the manage server permission instead of restricting the command to the server owner for the Revolt bot.
+- Poll command now supports up to 5 answers instead of 2.
+- New Dockerfile file
+
 May 13th, 2025
 
 - Source code gets discontinued

@@ -17,16 +17,16 @@ client = commands.Bot(command_prefix=PREFIX, intents=intents)
 client.remove_command("help")
 
 def convert(time):
-  pos = ["s","m","h","d"]
-  time_dict = {"s" : 1, "m" : 60, "h" : 3600, "d": 3600*24}
-  unit = time[-1]
-  if unit not in pos:
-    return -1
-  try:
-    val = int(time[:-1])
-  except:
-    return -2
-  return val * time_dict[unit]
+    pos = ["s","m","h","d"]
+    time_dict = {"s" : 1, "m" : 60, "h" : 3600, "d": 3600*24}
+    unit = time[-1]
+    if unit not in pos:
+        return -1
+    try:
+      val = int(time[:-1])
+    except:
+      return -2
+    return val * time_dict[unit]
 
 @client.command()
 async def help(ctx):
@@ -194,7 +194,7 @@ async def numberguessing(ctx):
         else:
             return     
     else:
-        await ctx.send("You didnt guess the right number within 10 tries which means you lost. You can try again by using =numberguessing")
+        await ctx.send(f"You didnt guess the right number within 10 tries which means you lost. You can try again by using {PREFIX}numberguessing")
 
 
 
